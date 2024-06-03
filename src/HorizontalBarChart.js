@@ -1,19 +1,20 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-const HorizontalBarChart = ({ data }) => {
+const HorizontalBarChart = ({ data, onDataClick }) => {
   return (
     <BarChart
-      width={800}
-      height={400}
+      width={600}
+      height={300}
       data={data}
       layout="vertical"
-      margin={{
-        top: 5, right: 30, left: 20, bottom: 5,
+      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+      onClick={(event) => {
+        if (event && event.activePayload && event.activePayload.length > 0) {
+          onDataClick(event.activePayload[0].payload.name);
+        }
       }}
     >
-      {/* <CartesianGrid strokeDasharray="3 3" /> */}
-      <CartesianGrid stroke="none" />
       <XAxis type="number" />
       <YAxis dataKey="name" type="category" />
       <Tooltip />

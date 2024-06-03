@@ -11,14 +11,12 @@ const LineChartComponent = ({ data }) => {
         top: 5, right: 30, left: 20, bottom: 5,
       }}
     >
-      <CartesianGrid strokeDasharray="1 1" />
+      <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="date" />
       <YAxis />
       <Tooltip />
       <Legend />
-      <Line type="monotone" dataKey="SMT_A" stroke="#8884d8" name="SMT A" />
-      <Line type="monotone" dataKey="SMT_B" stroke="#82ca9d" name="SMT B" />
-      <Line type="monotone" dataKey="SMT_C" stroke="#ffc658" name="SMT C" />
+      <Line type="monotone" dataKey="value" stroke="#8884d8" name="Falhas ao longo do tempo" />
     </LineChart>
   );
 };
