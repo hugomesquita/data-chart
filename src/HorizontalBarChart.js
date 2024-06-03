@@ -1,7 +1,7 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Cell } from 'recharts'; // Import Cell from 'recharts'
 
-const HorizontalBarChart = ({ data, onDataClick }) => {
+const HorizontalBarChart = ({ data, onDataClick, selectedLabel }) => {
   return (
     <BarChart
       width={600}
@@ -19,7 +19,26 @@ const HorizontalBarChart = ({ data, onDataClick }) => {
       <YAxis dataKey="name" type="category" />
       <Tooltip />
       <Legend />
-      <Bar dataKey="value" fill="#82ca9d" name="Falhas" />
+      <Bar 
+        dataKey="value" 
+        fill="#82ca9d" 
+        name="Falhas" 
+        isAnimationActive={false} 
+        onClick={(event) => {
+          if (event && event.activePayload && event.activePayload.length > 0) {
+            onDataClick(event.activePayload[0].payload.name);
+          }
+        }}
+        >
+        {
+          data.map((entry, index) => (
+            <Cell 
+              key={`cell-${index}`} 
+              fill={entry.name === selectedLabel ? '#ff7300' : '#82ca9d'} 
+            />
+          ))
+        }
+      </Bar>
     </BarChart>
   );
 };

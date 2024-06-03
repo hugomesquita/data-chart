@@ -21,7 +21,7 @@ const VerticalBarChart = ({ onDataClick }) => {
       }}
     >
       <XAxis dataKey="name" />
-      <YAxis />
+      <YAxis type="number" domain={[0, 60]} />
       <Tooltip />
       <Legend />
       <Bar dataKey="quantity" fill="#8884d8" />
