@@ -54,10 +54,6 @@ const App = () => {
       { name: 'EOI 1', value: 8, label: 'Falhas Tipo 1', date: '2024-01-09' },
       { name: 'EOI 2', value: 16, label: 'Falhas Tipo 2', date: '2024-01-10' },
       { name: 'EOI 1', value: 6, label: 'Falhas Tipo 1', date: '2024-01-11' },
-      { name: 'EOI 2', value: 15, label: 'Falhas Tipo 2', date: '2024-01-12' },
-      { name: 'EOI 1', value: 5, label: 'Falhas Tipo 1', date: '2024-01-13' },
-      { name: 'EOI 2', value: 7, label: 'Falhas Tipo 2', date: '2024-01-14' },
-      { name: 'EOI 1', value: 9, label: 'Falhas Tipo 1', date: '2024-01-15' },
     ],
   };
 
@@ -74,12 +70,17 @@ const App = () => {
   };
 
   const combinedFailureData = Object.values(data).flat();
+  const newData = Object.keys(data).map((key) => ({
+    name: key,
+    quantity: data[key].reduce((acc, cur) => acc + cur.value, 0),
+  }));
 
+  console.log(newData)
   return (
     <div>
       <h1>SMT Data Visualization</h1>
       {selectedLabel && <h2>Selected: {selectedLabel}</h2>}
-      <VerticalBarChart onDataClick={handleDataClick} selectedLabel={selectedLabel} />
+      <VerticalBarChart data={newData} onDataClick={handleDataClick} selectedLabel={selectedLabel} />
       <HorizontalBarChart data={filteredData || combinedFailureData} onDataClick={handleDataClick} selectedLabel={selectedLabel} />
       <LineChartComponent data={filteredData || combinedFailureData} />
     </div>

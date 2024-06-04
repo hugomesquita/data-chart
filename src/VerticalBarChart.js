@@ -1,13 +1,13 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-const data = [
-  { name: 'SMT A', quantity: 30 },
-  { name: 'SMT B', quantity: 45 },
-  { name: 'SMT C', quantity: 20 },
-];
+// const data = [
+//   { name: 'SMT A', quantity: 143 },
+//   { name: 'SMT B', quantity: 167 },
+//   { name: 'SMT C', quantity: 167 },
+// ];
 
-const VerticalBarChart = ({ onDataClick }) => {
+const VerticalBarChart = ({ data, onDataClick }) => {
   return (
     <BarChart
       width={600}
