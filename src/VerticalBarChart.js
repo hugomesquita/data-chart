@@ -24,7 +24,7 @@ const VerticalBarChart = ({ data, onDataClick }) => {
       <YAxis type="number" domain={[0, 60]} />
       <Tooltip />
       <Legend />
-      <Bar dataKey="quantity" fill="#8884d8" />
+      <Bar dataKey="quantity" fill="#8884d8" cursor="pointer" />
     </BarChart>
   );
 };

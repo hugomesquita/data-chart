@@ -38,6 +38,7 @@ const HorizontalBarChart = ({ data, onDataClick, selectedLabel }) => {
           fill="#82ca9d" 
           name="Falhas" 
           isAnimationActive={false} 
+          cursor="pointer"
           onClick={(event) => {
             if (event && event.activePayload && event.activePayload.length > 0) {
               onDataClick(event.activePayload[0].payload.name);
