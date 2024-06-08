@@ -1,0 +1,28 @@
+{
+  "overview": {
+    "repair_total": 36,
+    "attrition_total": 13
+  },
+  "SMT A": [
+    {
+      "attrition": [
+        {"hour": "2023-02-20 12:00:00", "quantity": 10},
+        {"hour": "2023-02-20 13:00:00", "quantity": 15},
+        {"hour": "2023-02-20 14:00:00", "quantity": 8}
+      ],
+      "repair": [
+        {"hour": "2023-02-20 12:00:00", "quantity": 10},
+        {"hour": "2023-02-20 13:00:00", "quantity": 15},
+        {"hour": "2023-02-20 14:00:00", "quantity": 8}
+      ],
+      "station": [
+        {"name": "EOI 1", "quantity": 10},
+        {"name": "EOI 2", "quantity": 20}
+      ],
+      "reason": [
+        {"name": "Component Chift", "quantity": 8},
+        {"name": "Component Missing", "quantity": 10}
+      ]
+    }
+  ]
+}

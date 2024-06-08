@@ -20,7 +20,7 @@ const LineChartComponent = ({ data }) => {
         <XAxis 
             dataKey="date" 
             tick={{ fontSize: 12 }}
-            tickFormatter={(date) => format(new Date(date), 'dd/MM') +1 }
+            tickFormatter={(date) => format(new Date(date), 'HH:mm')}
         />
         <YAxis domain={[0, 40]} />
         <Tooltip />
@@ -36,7 +36,7 @@ const LineChartComponent = ({ data }) => {
             height={30} 
             stroke="#8884d8"
             // startIndex={1}
-            tickFormatter={(date) => format(new Date(date), 'dd/MM')}
+            tickFormatter={(date) => format(new Date(date), 'HH:mm')}
         />
       </LineChart>
     </ResponsiveContainer>
