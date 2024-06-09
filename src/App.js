@@ -1,88 +1,170 @@
-import React, { useState } from 'react';
-import VerticalBarChart from './VerticalBarChart';
-import HorizontalBarChart from './HorizontalBarChart';
-import LineChartComponent from './LineChartComponent';
+import React, { useState, useEffect } from 'react';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart,  } from 'recharts';
+import data from './dados.json';
+
+const prepareChartData = (selectedSMT) => {
+  const hourlyData = {};
+
+  const smtData = selectedSMT ? data.SMT[selectedSMT] : data.SMT;
+  
+  if (smtData && smtData.attrition && smtData.repair) {
+    smtData.attrition.forEach(({ hour, quantity }) => {
+      if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
+      hourlyData[hour].attrition += quantity;
+    });
+    smtData.repair.forEach(({ hour, quantity }) => {
+      if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
+      hourlyData[hour].repair += quantity;
+    });
+  }
+
+  return Object.values(hourlyData);
+};
+
+const prepareStationChartData = (selectedSMT) => {
+  const stationData = {};
+
+
+  const smtData = selectedSMT? data.SMT[selectedSMT] : data.SMT;
+
+  if (smtData && smtData.station) {
+    smtData.station.forEach(({ hour, name, quantity }) => {
+      if (!stationData[name]) stationData[name] = { name, quantity: 0 };
+      stationData[name].quantity += quantity;
+    });
+
+    return Object.values(stationData);
+  }
+
+  // Add this if statement to include the total of A, B, and C when selectedSMT is null
+  if (selectedSMT === null) {
+    Object.values(data.SMT).forEach(smt => {
+      smt.station.forEach(({ name, quantity }) => {
+        if (!stationData[name]) stationData[name] = { name, quantity: 0 };
+        stationData[name].quantity += quantity;
+      });
+    });
+  }
+
+  return Object.values(stationData);
+};
+
+const Card = ({ title, quantity, onClick }) => (
+  <div style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '10px', margin: '10px', width: '200px', cursor: 'pointer' }} onClick={onClick}>
+    <h3>{title}</h3>
+    <p>{quantity}</p>
+  </div>
+);
 
 const App = () => {
-  const [filteredData, setFilteredData] = useState(null);
-  const [selectedLabel, setSelectedLabel] = useState(null);
+  const [selectedSMT, setSelectedSMT] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [totalAttrition, setTotalAttrition] = useState(0);
+  const [totalRepair, setTotalRepair] = useState(0);
+  const [totalStation, setTotalStation] = useState(0);
+  const [stationChartData, setStationChartData] = useState([]); // Estado para dados do gráfico de estações
+  const [selectedHour, setSelectedHour] = useState(null);
 
-  const data = {
-    'SMT A': [
-      { name: 'EOI 1', value: 10, label: 'Falhas Tipo 1', date: '2024-01-01' },
-      { name: 'EOI 2', value: 15, label: 'Falhas Tipo 2', date: '2024-01-02' },
-      { name: 'EOI 1', value: 12, label: 'Falhas Tipo 1', date: '2024-01-03' },
-      { name: 'EOI 2', value: 12, label: 'Falhas Tipo 2', date: '2024-01-04' },
-      { name: 'EOI 1', value: 8, label: 'Falhas Tipo 1', date: '2024-01-05' },
-      { name: 'EOI 2', value: 10, label: 'Falhas Tipo 2', date: '2024-01-06' },
-      { name: 'EOI 1', value: 5, label: 'Falhas Tipo 1', date: '2024-01-07' },
-      { name: 'EOI 2', value: 9, label: 'Falhas Tipo 2', date: '2024-01-08' },
-      { name: 'EOI 1', value: 7, label: 'Falhas Tipo 1', date: '2024-01-09' },
-      { name: 'EOI 2', value: 14, label: 'Falhas Tipo 2', date: '2024-01-10' },
-      { name: 'EOI 1', value: 11, label: 'Falhas Tipo 1', date: '2024-01-11' },
-      { name: 'EOI 2', value: 8, label: 'Falhas Tipo 2', date: '2024-01-12' },
-      { name: 'EOI 1', value: 6, label: 'Falhas Tipo 1', date: '2024-01-13' },
-      { name: 'EOI 2', value: 7, label: 'Falhas Tipo 2', date: '2024-01-14' },
-      { name: 'EOI 1', value: 9, label: 'Falhas Tipo 1', date: '2024-01-15' },
-    ],
-    'SMT B': [
-      { name: 'EOI 1', value: 10, label: 'Falhas Tipo 1', date: '2024-01-01' },
-      { name: 'EOI 2', value: 15, label: 'Falhas Tipo 2', date: '2024-01-02' },
-      { name: 'EOI 1', value: 5, label: 'Falhas Tipo 1', date: '2024-01-03' },
-      { name: 'EOI 2', value: 20, label: 'Falhas Tipo 2', date: '2024-01-04' },
-      { name: 'EOI 1', value: 7, label: 'Falhas Tipo 1', date: '2024-01-05' },
-      { name: 'EOI 2', value: 18, label: 'Falhas Tipo 2', date: '2024-01-06' },
-      { name: 'EOI 1', value: 9, label: 'Falhas Tipo 1', date: '2024-01-07' },
-      { name: 'EOI 2', value: 17, label: 'Falhas Tipo 2', date: '2024-01-08' },
-      { name: 'EOI 1', value: 8, label: 'Falhas Tipo 1', date: '2024-01-09' },
-      { name: 'EOI 2', value: 16, label: 'Falhas Tipo 2', date: '2024-01-10' },
-      { name: 'EOI 1', value: 6, label: 'Falhas Tipo 1', date: '2024-01-11' },
-      { name: 'EOI 2', value: 15, label: 'Falhas Tipo 2', date: '2024-01-12' },
-      { name: 'EOI 1', value: 5, label: 'Falhas Tipo 1', date: '2024-01-13' },
-      { name: 'EOI 2', value: 7, label: 'Falhas Tipo 2', date: '2024-01-14' },
-      { name: 'EOI 1', value: 9, label: 'Falhas Tipo 1', date: '2024-01-15' },
-    ],
-    'SMT C': [
-      { name: 'EOI 1', value: 10, label: 'Falhas Tipo 1', date: '2024-01-01' },
-      { name: 'EOI 2', value: 15, label: 'Falhas Tipo 2', date: '2024-01-02' },
-      { name: 'EOI 1', value: 5, label: 'Falhas Tipo 1', date: '2024-01-03' },
-      { name: 'EOI 2', value: 20, label: 'Falhas Tipo 2', date: '2024-01-04' },
-      { name: 'EOI 1', value: 7, label: 'Falhas Tipo 1', date: '2024-01-05' },
-      { name: 'EOI 2', value: 18, label: 'Falhas Tipo 2', date: '2024-01-06' },
-      { name: 'EOI 1', value: 9, label: 'Falhas Tipo 1', date: '2024-01-07' },
-      { name: 'EOI 2', value: 17, label: 'Falhas Tipo 2', date: '2024-01-08' },
-      { name: 'EOI 1', value: 8, label: 'Falhas Tipo 1', date: '2024-01-09' },
-      { name: 'EOI 2', value: 16, label: 'Falhas Tipo 2', date: '2024-01-10' },
-      { name: 'EOI 1', value: 6, label: 'Falhas Tipo 1', date: '2024-01-11' },
-    ],
-  };
+  // Calcular o total de "Attrition" e "Repair" por hora ao carregar a página
+  useEffect(() => {
+    const hourlyData = {};
+  
+    Object.keys(data.SMT).forEach((smt) => {
+      data.SMT[smt].attrition.forEach(({ hour, quantity }) => {
+        if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0, station: 0 };
+        hourlyData[hour].attrition += quantity;
+      });
+      data.SMT[smt].repair.forEach(({ hour, quantity }) => {
+        if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0, station: 0 };
+        hourlyData[hour].repair += quantity;
+      });
+      data.SMT[smt].station.forEach(({ hour, quantity }) => {
+        if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0, station: 0 };
+        hourlyData[hour].station += quantity;
+      });
+    });
+  
+    const totalData = Object.values(hourlyData).map(({ hour, attrition, repair, station }) => ({ hour, attrition, repair, station }));
+    setChartData(totalData);
+  
+    // Calcular o total de "Attrition" e "Repair" global
+    let totalAttritionValue = 0;
+    let totalRepairValue = 0;
+    let totalStationValue = 0;
+  
+    Object.keys(data.SMT).forEach((smt) => {
+      totalAttritionValue += data.SMT[smt].attrition.reduce((acc, item) => acc + item.quantity, 0);
+      totalRepairValue += data.SMT[smt].repair.reduce((acc, item) => acc + item.quantity, 0);
+      totalStationValue += data.SMT[smt].station.reduce((acc, item) => acc + item.quantity, 0);
+    });
+  
+    setTotalAttrition(totalAttritionValue);
+    setTotalRepair(totalRepairValue);
+    setTotalStation(totalStationValue);
+  
+    // Adicionar esta linha para carregar a Quantidades de Estações por Nome de forma total
+    setStationChartData(prepareStationChartData(null)); // Carrega total de A, B, C ao iniciar
+  }, []);
+  
+  const handleSMTClick = (smt) => {
+    if (smt === null) {
+      // Calcular o total de "Attrition" e "Repair" por hora novamente
+      const hourlyData = {};
 
-  const handleDataClick = (name) => {
-    const selectedData = data[name];
-    if (selectedData) {
-      setFilteredData(selectedData);
-      setSelectedLabel(name);
+      Object.keys(data.SMT).forEach((smt) => {
+        data.SMT[smt].attrition.forEach(({ hour, quantity }) => {
+          if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
+          hourlyData[hour].attrition += quantity;
+        });
+        data.SMT[smt].repair.forEach(({ hour, quantity }) => {
+          if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
+          hourlyData[hour].repair += quantity;
+        });
+      });
+
+      const totalData = Object.values(hourlyData).map(({ hour, attrition, repair }) => ({ hour, attrition, repair }));
+      setChartData(totalData);
+      setStationChartData(prepareStationChartData(null)); // Atualizar gráfico de estações
     } else {
-      const selectedTypeData = Object.values(data).flat().filter(item => item.name === name);
-      setFilteredData(selectedTypeData);
-      setSelectedLabel(name);
+      setSelectedSMT(smt);
+      setChartData(prepareChartData(smt));
+      setStationChartData(prepareStationChartData(smt)); // Atualizar gráfico de estações
     }
   };
 
-  const combinedFailureData = Object.values(data).flat();
-  const newData = Object.keys(data).map((key) => ({
-    name: key,
-    quantity: data[key].reduce((acc, cur) => acc + cur.value, 0),
-  }));
-
-  console.log(newData)
   return (
     <div>
-      <h1>SMT Data Visualization</h1>
-      {selectedLabel && <h2>Selected: {selectedLabel}</h2>}
-      <VerticalBarChart data={newData} onDataClick={handleDataClick} selectedLabel={selectedLabel} />
-      <HorizontalBarChart data={filteredData || combinedFailureData} onDataClick={handleDataClick} selectedLabel={selectedLabel} />
-      <LineChartComponent data={filteredData || combinedFailureData} />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Card title="Total Attrition" quantity={totalAttrition} onClick={() => handleSMTClick(null)} />
+        <Card title="Total Repair" quantity={totalRepair} onClick={() => handleSMTClick(null)} />
+        <Card title="Total Attrition by Hour" quantity={chartData.reduce((total, item) => total + item.attrition, 0)} onClick={() => handleSMTClick(null)} />
+        <Card title="Total Repair by Hour" quantity={chartData.reduce((total, item) => total + item.repair, 0)} onClick={() => handleSMTClick(null)} />
+      </div>
+      <ComposedChart width={800} height={400} data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="hour" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="attrition" name="Attrition" stroke="#8884d8" />
+        <Bar dataKey="repair" name="Repair" barSize={20} fill="#82ca9d" />
+      </ComposedChart>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+        {Object.keys(data.SMT).map((smt, index) => (
+          <Card key={index} title={smt} quantity={selectedSMT === smt ? data.SMT[smt].attrition.reduce((total, item) => total + item.quantity, 0) : data.SMT[smt].repair.reduce((total, item) => total + item.quantity, 0)} onClick={() => handleSMTClick(smt)} />
+        ))}
+      </div>
+      
+      <hr />
+      <h2>Quantidades de Estações por Nome</h2>
+      <BarChart width={600} height={300} data={stationChartData}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="quantity" fill="#82ca9d" />
+      </BarChart>
+
     </div>
   );
 };
