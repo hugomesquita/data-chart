@@ -6,7 +6,15 @@ const App = () => {
   const [chartData, setChartData] = useState([]);
   const [reasonData, setReasonData] = useState([]);
   const [stationData, setStationData] = useState([]);
-  const [filters, setFilters] = useState({ reason: null, station: null, hour: null });
+  const [filters, setFilters] = useState({ reason: null, station: null, hour: null, smt: null });
+
+  const [smtTotals, setSmtTotals] = useState({
+    SMT_A: { repair: 0, attrition: 0 },
+    SMT_B: { repair: 0, attrition: 0 },
+    SMT_C: { repair: 0, attrition: 0 },
+  });
+
+  const [overallTotals, setOverallTotals] = useState({ repair: 0, attrition: 0 });
 
   useEffect(() => {
     // Processamento dos dados de 'repair' e 'attrition' por hora
@@ -20,7 +28,8 @@ const App = () => {
 
         const matchesFilter = (filters.reason === null || reasons.some(r => r.label === filters.reason)) &&
                               (filters.station === null || stations.some(s => s.label === filters.station)) &&
-                              (filters.hour === null || filters.hour === hour);
+                              (filters.hour === null || filters.hour === hour) &&
+                              (filters.smt === null || filters.smt === smt);
 
         if (matchesFilter) {
           if (!acc[hour]) {
@@ -44,7 +53,8 @@ const App = () => {
         const reasons = data[smt][time].reason;
 
         const matchesFilter = (filters.hour === null || filters.hour === hour) &&
-                              (filters.station === null || data[smt][time].station.some(s => s.label === filters.station));
+                              (filters.station === null || data[smt][time].station.some(s => s.label === filters.station)) &&
+                              (filters.smt === null || filters.smt === smt);
 
         if (matchesFilter) {
           reasons.forEach((reason) => {
@@ -75,7 +85,8 @@ const App = () => {
         const stations = data[smt][time].station;
 
         const matchesFilter = (filters.hour === null || filters.hour === hour) &&
-                              (filters.reason === null || data[smt][time].reason.some(r => r.label === filters.reason));
+                              (filters.reason === null || data[smt][time].reason.some(r => r.label === filters.reason)) &&
+                              (filters.smt === null || filters.smt === smt);
 
         if (matchesFilter) {
           stations.forEach((station) => {
@@ -98,6 +109,41 @@ const App = () => {
     }));
 
     setStationData(stationArray);
+
+    // Calcula total de Repair e Attrition
+    let totalRep = 0;
+    let totalAtt = 0;
+    let smtARep = 0;
+    let smtAAtt = 0;
+    let smtBRep = 0;
+    let smtBAtt = 0;
+    let smtCRep = 0;
+    let smtCAtt = 0;
+
+    Object.keys(data).forEach((smt) => {
+      Object.values(data[smt]).forEach((timeData) => {
+        totalRep += timeData.repair;
+        totalAtt += timeData.attrition;
+
+        if (smt === 'SMT A') {
+          smtARep += timeData.repair;
+          smtAAtt += timeData.attrition;
+        } else if (smt === 'SMT B') {
+          smtBRep += timeData.repair;
+          smtBAtt += timeData.attrition;
+        } else if (smt === 'SMT C') {
+          smtCRep += timeData.repair;
+          smtCAtt += timeData.attrition;
+        }
+      });
+    });
+
+    setOverallTotals({ repair: totalRep, attrition: totalAtt });
+    setSmtTotals({
+      SMT_A: { repair: smtARep, attrition: smtAAtt },
+      SMT_B: { repair: smtBRep, attrition: smtBAtt },
+      SMT_C: { repair: smtCRep, attrition: smtCAtt },
+    });
   }, [filters]);
 
   const handleReasonClick = (data) => {
@@ -121,8 +167,42 @@ const App = () => {
     }));
   };
 
+  const handleSmtClick = (smt) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      smt: prevFilters.smt === smt ? null : smt,
+    }));
+  };
+
   return (
     <div>
+      <div className="card-container">
+        {/* Card: Total Repair & Attrition */}
+        <div className="card" onClick={() => handleSmtClick(null)}>
+          <h3>Total</h3>
+          <p>Repair: {overallTotals.repair}</p>
+          <p>Attrition: {overallTotals.attrition}</p>
+        </div>
+        {/* Card: SMT A Repair & Attrition */}
+        <div className="card" onClick={() => handleSmtClick('SMT A')}>
+          <h3>SMT A</h3>
+          <p>Repair: {smtTotals.SMT_A.repair}</p>
+          <p>Attrition: {smtTotals.SMT_A.attrition}</p>
+        </div>
+        {/* Card: SMT B Repair & Attrition */}
+        <div className="card" onClick={() => handleSmtClick('SMT B')}>
+          <h3>SMT B</h3>
+          <p>Repair: {smtTotals.SMT_B.repair}</p>
+          <p>Attrition: {smtTotals.SMT_B.attrition}</p>
+        </div>
+        {/* Card: SMT C Repair & Attrition */}
+        <div className="card" onClick={() => handleSmtClick('SMT C')}>
+          <h3>SMT C</h3>
+          <p>Repair: {smtTotals.SMT_C.repair}</p>
+          <p>Attrition: {smtTotals.SMT_C.attrition}</p>
+        </div>
+      </div>
+
       <h2>Attrition & Repair by Hour</h2>
       <ComposedChart
         width={800}
