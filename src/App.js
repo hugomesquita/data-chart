@@ -176,27 +176,27 @@ const App = () => {
 
   return (
     <div>
-      <div className="card-container">
+      <div className="card-container" style={{ display: "flex", flexDirection: "row"}}>
         {/* Card: Total Repair & Attrition */}
-        <div className="card" onClick={() => handleSmtClick(null)}>
+        <div className="card" onClick={() => handleSmtClick(null)} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer",}}>
           <h3>Total</h3>
           <p>Repair: {overallTotals.repair}</p>
           <p>Attrition: {overallTotals.attrition}</p>
         </div>
         {/* Card: SMT A Repair & Attrition */}
-        <div className="card" onClick={() => handleSmtClick('SMT A')}>
+        <div className="card" onClick={() => handleSmtClick('SMT A')} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer"}}>
           <h3>SMT A</h3>
           <p>Repair: {smtTotals.SMT_A.repair}</p>
           <p>Attrition: {smtTotals.SMT_A.attrition}</p>
         </div>
         {/* Card: SMT B Repair & Attrition */}
-        <div className="card" onClick={() => handleSmtClick('SMT B')}>
+        <div className="card" onClick={() => handleSmtClick('SMT B')} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer"}}>
           <h3>SMT B</h3>
           <p>Repair: {smtTotals.SMT_B.repair}</p>
           <p>Attrition: {smtTotals.SMT_B.attrition}</p>
         </div>
         {/* Card: SMT C Repair & Attrition */}
-        <div className="card" onClick={() => handleSmtClick('SMT C')}>
+        <div className="card" onClick={() => handleSmtClick('SMT C')} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer"}}>
           <h3>SMT C</h3>
           <p>Repair: {smtTotals.SMT_C.repair}</p>
           <p>Attrition: {smtTotals.SMT_C.attrition}</p>
