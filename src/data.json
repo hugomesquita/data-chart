@@ -1,0 +1,65 @@
+{
+  "SMT A": {
+    "2023-02-20 12:00:00": {
+      "repair": 12,
+      "attrition": 2,
+      "station": [{"label": "EOI 1", "quantity": 0}],
+      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
+    },
+    "2023-02-20 13:00:00": {
+      "repair": 1,
+      "attrition": 7,
+      "station": [{"label": "EOI 2", "quantity": 6}],
+      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
+    },
+    "2023-02-20 14:00:00": {
+      "repair": 8,
+      "attrition": 4,
+      "station": [{}],
+      "reason": [{}]
+    }
+  },
+
+  "SMT B": {
+    "2023-02-20 12:00:00": {
+      "repair": 10,
+      "attrition": 2,
+      "station": [{"label": "EOI 1", "quantity": 10}],
+      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
+    },
+    "2023-02-20 13:00:00": {
+      "repair": 0,
+      "attrition": 2,
+      "station": [{}],
+      "reason": [{}]
+    },
+    "2023-02-20 14:00:00": {
+      "repair": 0,
+      "attrition": 2,
+      "station": [{}],
+      "reason": [{}]
+    }
+  },
+
+
+  "SMT C": {
+    "2023-02-20 12:00:00": {
+      "repair": 30,
+      "attrition": 20,
+      "station": [{"label": "EOI 1", "quantity": 10}],
+      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
+    },
+    "2023-02-20 13:00:00": {
+      "repair": 20,
+      "attrition": 2,
+      "station": [{}],
+      "reason": [{}]
+    },
+    "2023-02-20 14:00:00": {
+      "repair": 0,
+      "attrition": 2,
+      "station": [{}],
+      "reason": [{}]
+    }
+  }
+}

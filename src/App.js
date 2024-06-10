@@ -1,170 +1,180 @@
 import React, { useState, useEffect } from 'react';
-import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart,  } from 'recharts';
-import data from './dados.json';
-
-const prepareChartData = (selectedSMT) => {
-  const hourlyData = {};
-
-  const smtData = selectedSMT ? data.SMT[selectedSMT] : data.SMT;
-  
-  if (smtData && smtData.attrition && smtData.repair) {
-    smtData.attrition.forEach(({ hour, quantity }) => {
-      if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
-      hourlyData[hour].attrition += quantity;
-    });
-    smtData.repair.forEach(({ hour, quantity }) => {
-      if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
-      hourlyData[hour].repair += quantity;
-    });
-  }
-
-  return Object.values(hourlyData);
-};
-
-const prepareStationChartData = (selectedSMT) => {
-  const stationData = {};
-
-
-  const smtData = selectedSMT? data.SMT[selectedSMT] : data.SMT;
-
-  if (smtData && smtData.station) {
-    smtData.station.forEach(({ hour, name, quantity }) => {
-      if (!stationData[name]) stationData[name] = { name, quantity: 0 };
-      stationData[name].quantity += quantity;
-    });
-
-    return Object.values(stationData);
-  }
-
-  // Add this if statement to include the total of A, B, and C when selectedSMT is null
-  if (selectedSMT === null) {
-    Object.values(data.SMT).forEach(smt => {
-      smt.station.forEach(({ name, quantity }) => {
-        if (!stationData[name]) stationData[name] = { name, quantity: 0 };
-        stationData[name].quantity += quantity;
-      });
-    });
-  }
-
-  return Object.values(stationData);
-};
-
-const Card = ({ title, quantity, onClick }) => (
-  <div style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '10px', margin: '10px', width: '200px', cursor: 'pointer' }} onClick={onClick}>
-    <h3>{title}</h3>
-    <p>{quantity}</p>
-  </div>
-);
+import { ComposedChart, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LabelList } from 'recharts';
+import data from './data.json';
 
 const App = () => {
-  const [selectedSMT, setSelectedSMT] = useState(null);
   const [chartData, setChartData] = useState([]);
-  const [totalAttrition, setTotalAttrition] = useState(0);
-  const [totalRepair, setTotalRepair] = useState(0);
-  const [totalStation, setTotalStation] = useState(0);
-  const [stationChartData, setStationChartData] = useState([]); // Estado para dados do gráfico de estações
-  const [selectedHour, setSelectedHour] = useState(null);
+  const [reasonData, setReasonData] = useState([]);
+  const [stationData, setStationData] = useState([]);
+  const [filters, setFilters] = useState({ reason: null, station: null, hour: null });
 
-  // Calcular o total de "Attrition" e "Repair" por hora ao carregar a página
   useEffect(() => {
-    const hourlyData = {};
-  
-    Object.keys(data.SMT).forEach((smt) => {
-      data.SMT[smt].attrition.forEach(({ hour, quantity }) => {
-        if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0, station: 0 };
-        hourlyData[hour].attrition += quantity;
-      });
-      data.SMT[smt].repair.forEach(({ hour, quantity }) => {
-        if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0, station: 0 };
-        hourlyData[hour].repair += quantity;
-      });
-      data.SMT[smt].station.forEach(({ hour, quantity }) => {
-        if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0, station: 0 };
-        hourlyData[hour].station += quantity;
-      });
-    });
-  
-    const totalData = Object.values(hourlyData).map(({ hour, attrition, repair, station }) => ({ hour, attrition, repair, station }));
-    setChartData(totalData);
-  
-    // Calcular o total de "Attrition" e "Repair" global
-    let totalAttritionValue = 0;
-    let totalRepairValue = 0;
-    let totalStationValue = 0;
-  
-    Object.keys(data.SMT).forEach((smt) => {
-      totalAttritionValue += data.SMT[smt].attrition.reduce((acc, item) => acc + item.quantity, 0);
-      totalRepairValue += data.SMT[smt].repair.reduce((acc, item) => acc + item.quantity, 0);
-      totalStationValue += data.SMT[smt].station.reduce((acc, item) => acc + item.quantity, 0);
-    });
-  
-    setTotalAttrition(totalAttritionValue);
-    setTotalRepair(totalRepairValue);
-    setTotalStation(totalStationValue);
-  
-    // Adicionar esta linha para carregar a Quantidades de Estações por Nome de forma total
-    setStationChartData(prepareStationChartData(null)); // Carrega total de A, B, C ao iniciar
-  }, []);
-  
-  const handleSMTClick = (smt) => {
-    if (smt === null) {
-      // Calcular o total de "Attrition" e "Repair" por hora novamente
-      const hourlyData = {};
+    // Processamento dos dados de 'repair' e 'attrition' por hora
+    const processedData = Object.keys(data).reduce((acc, smt) => {
+      Object.keys(data[smt]).forEach((time) => {
+        const hour = time.slice(11, 16); // Extraindo hora do timestamp
+        const repair = data[smt][time].repair;
+        const attrition = data[smt][time].attrition;
+        const reasons = data[smt][time].reason;
+        const stations = data[smt][time].station;
 
-      Object.keys(data.SMT).forEach((smt) => {
-        data.SMT[smt].attrition.forEach(({ hour, quantity }) => {
-          if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
-          hourlyData[hour].attrition += quantity;
-        });
-        data.SMT[smt].repair.forEach(({ hour, quantity }) => {
-          if (!hourlyData[hour]) hourlyData[hour] = { hour, attrition: 0, repair: 0 };
-          hourlyData[hour].repair += quantity;
-        });
+        const matchesFilter = (filters.reason === null || reasons.some(r => r.label === filters.reason)) &&
+                              (filters.station === null || stations.some(s => s.label === filters.station)) &&
+                              (filters.hour === null || filters.hour === hour);
+
+        if (matchesFilter) {
+          if (!acc[hour]) {
+            acc[hour] = { hour, repair: 0, attrition: 0 };
+          }
+
+          acc[hour].repair += repair;
+          acc[hour].attrition += attrition;
+        }
       });
 
-      const totalData = Object.values(hourlyData).map(({ hour, attrition, repair }) => ({ hour, attrition, repair }));
-      setChartData(totalData);
-      setStationChartData(prepareStationChartData(null)); // Atualizar gráfico de estações
-    } else {
-      setSelectedSMT(smt);
-      setChartData(prepareChartData(smt));
-      setStationChartData(prepareStationChartData(smt)); // Atualizar gráfico de estações
-    }
+      return acc;
+    }, {});
+
+    setChartData(Object.values(processedData));
+
+    // Processamento dos dados de 'reason' para o gráfico horizontal
+    const reasonCounts = Object.keys(data).reduce((acc, smt) => {
+      Object.keys(data[smt]).forEach((time) => {
+        const hour = time.slice(11, 16); // Extraindo hora do timestamp
+        const reasons = data[smt][time].reason;
+
+        const matchesFilter = (filters.hour === null || filters.hour === hour) &&
+                              (filters.station === null || data[smt][time].station.some(s => s.label === filters.station));
+
+        if (matchesFilter) {
+          reasons.forEach((reason) => {
+            if (reason.label) {
+              if (!acc[reason.label]) {
+                acc[reason.label] = 0;
+              }
+              acc[reason.label] += reason.quantity;
+            }
+          });
+        }
+      });
+
+      return acc;
+    }, {});
+
+    const reasonArray = Object.keys(reasonCounts).map((label) => ({
+      label,
+      quantity: reasonCounts[label],
+    }));
+
+    setReasonData(reasonArray);
+
+    // Processamento dos dados de 'station' para o gráfico vertical
+    const stationCounts = Object.keys(data).reduce((acc, smt) => {
+      Object.keys(data[smt]).forEach((time) => {
+        const hour = time.slice(11, 16); // Extraindo hora do timestamp
+        const stations = data[smt][time].station;
+
+        const matchesFilter = (filters.hour === null || filters.hour === hour) &&
+                              (filters.reason === null || data[smt][time].reason.some(r => r.label === filters.reason));
+
+        if (matchesFilter) {
+          stations.forEach((station) => {
+            if (station.label) {
+              if (!acc[station.label]) {
+                acc[station.label] = 0;
+              }
+              acc[station.label] += station.quantity;
+            }
+          });
+        }
+      });
+
+      return acc;
+    }, {});
+
+    const stationArray = Object.keys(stationCounts).map((label) => ({
+      label,
+      quantity: stationCounts[label],
+    }));
+
+    setStationData(stationArray);
+  }, [filters]);
+
+  const handleReasonClick = (data) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      reason: prevFilters.reason === data.label ? null : data.label,
+    }));
+  };
+
+  const handleStationClick = (data) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      station: prevFilters.station === data.label ? null : data.label,
+    }));
+  };
+
+  const handleHourClick = (data) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      hour: prevFilters.hour === data.hour ? null : data.hour,
+    }));
   };
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Card title="Total Attrition" quantity={totalAttrition} onClick={() => handleSMTClick(null)} />
-        <Card title="Total Repair" quantity={totalRepair} onClick={() => handleSMTClick(null)} />
-        <Card title="Total Attrition by Hour" quantity={chartData.reduce((total, item) => total + item.attrition, 0)} onClick={() => handleSMTClick(null)} />
-        <Card title="Total Repair by Hour" quantity={chartData.reduce((total, item) => total + item.repair, 0)} onClick={() => handleSMTClick(null)} />
-      </div>
-      <ComposedChart width={800} height={400} data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="hour" />
+      <h2>Attrition & Repair by Hour</h2>
+      <ComposedChart
+        width={800}
+        height={400}
+        data={chartData}
+        onClick={(event) => handleHourClick(event.activePayload[0].payload)}
+      >
+        <XAxis dataKey="hour" tickFormatter={(hour) => hour} />
         <YAxis />
+        <CartesianGrid stroke="#f5f5f5" />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="attrition" name="Attrition" stroke="#8884d8" />
-        <Bar dataKey="repair" name="Repair" barSize={20} fill="#82ca9d" />
+        <Bar dataKey="repair" barSize={20} fill="#82ca9d" name="Repair" />
+        <Bar dataKey="attrition" barSize={20} fill="#8884d8" name="Attrition" />
       </ComposedChart>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-        {Object.keys(data.SMT).map((smt, index) => (
-          <Card key={index} title={smt} quantity={selectedSMT === smt ? data.SMT[smt].attrition.reduce((total, item) => total + item.quantity, 0) : data.SMT[smt].repair.reduce((total, item) => total + item.quantity, 0)} onClick={() => handleSMTClick(smt)} />
-        ))}
-      </div>
-      
-      <hr />
-      <h2>Quantidades de Estações por Nome</h2>
-      <BarChart width={600} height={300} data={stationChartData}>
-        <XAxis dataKey="name" />
-        <YAxis />
+
+      <h2>Reasons by Label</h2>
+      <BarChart
+        width={800}
+        height={400}
+        data={reasonData}
+        layout="vertical"
+        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        onClick={(event) => handleReasonClick(event.activePayload[0].payload)}
+      >
+        <XAxis type="number" />
+        <YAxis type="category" dataKey="label" />
+        <CartesianGrid stroke="#f5f5f5" />
         <Tooltip />
         <Legend />
-        <Bar dataKey="quantity" fill="#82ca9d" />
+        <Bar dataKey="quantity" fill="#8884d8" name="Quantity">
+          <LabelList dataKey="quantity" position="top" />
+        </Bar>
       </BarChart>
 
+      <h2>Stations by Label</h2>
+      <BarChart
+        width={800}
+        height={400}
+        data={stationData}
+        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        onClick={(event) => handleStationClick(event.activePayload[0].payload)}
+      >
+        <XAxis dataKey="label" />
+        <YAxis />
+        <CartesianGrid stroke="#f5f5f5" />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="quantity" fill="#82ca9d" name="Quantity">
+          <LabelList dataKey="quantity" position="top" />
+        </Bar>
+      </BarChart>
     </div>
   );
 };
