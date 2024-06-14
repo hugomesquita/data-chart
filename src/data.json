@@ -1,65 +1,82 @@
-{
-  "SMT A": {
-    "2023-02-20 12:00:00": {
-      "repair": 12,
-      "attrition": 2,
-      "station": [{"label": "EOI 1", "quantity": 0}],
-      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
-    },
-    "2023-02-20 13:00:00": {
-      "repair": 1,
-      "attrition": 7,
-      "station": [{"label": "EOI 2", "quantity": 6}],
-      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
-    },
-    "2023-02-20 14:00:00": {
-      "repair": 8,
-      "attrition": 4,
-      "station": [{}],
-      "reason": [{}]
+[
+  {
+    "description": "SMT A",
+    "result": {
+      "2023-02-20 12:00:00": {
+        "repair": 12,
+        "attrition": 2,
+        "station": [{"label": "EOI 1", "quantity": 0}],
+        "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}],
+        "repair_history": [{"location": "CS3", "quantity": 8}, {"location": "UUI/H5", "quantity": 2}, {"location": "CG9", "quantity": 2}]
+      },
+      "2023-02-20 13:00:00": {
+        "repair": 1,
+        "attrition": 7,
+        "station": [{"label": "EOI 2", "quantity": 6}],
+        "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}],
+        "repair_history": [{"location": "CS3", "quantity": 1}, {"location": "UUI/H5", "quantity": 4}]
+      },
+      "2023-02-20 14:00:00": {
+        "repair": 8,
+        "attrition": 4,
+        "station": [{}],
+        "reason": [{}],
+        "repair_history": [{}]
+      }
     }
   },
 
-  "SMT B": {
-    "2023-02-20 12:00:00": {
-      "repair": 10,
-      "attrition": 2,
-      "station": [{"label": "EOI 1", "quantity": 10}],
-      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
-    },
-    "2023-02-20 13:00:00": {
-      "repair": 0,
-      "attrition": 2,
-      "station": [{}],
-      "reason": [{}]
-    },
-    "2023-02-20 14:00:00": {
-      "repair": 0,
-      "attrition": 2,
-      "station": [{}],
-      "reason": [{}]
+  {
+    "description": "SMT B",
+    "result": {
+      "2023-02-20 12:00:00": {
+        "repair": 10,
+        "attrition": 2,
+        "station": [{"label": "EOI 1", "quantity": 10}],
+        "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}],
+        "repair_history": [{"location": "CS3", "quantity": 8}, {"location": "CG9", "quantity": 2}]
+      },
+      "2023-02-20 13:00:00": {
+        "repair": 0,
+        "attrition": 2,
+        "station": [{}],
+        "reason": [{}],
+        "repair_history": [{}]
+      },
+      "2023-02-20 14:00:00": {
+        "repair": 0,
+        "attrition": 2,
+        "station": [{}],
+        "reason": [{}],
+        "repair_history": [{}]
+      }
     }
   },
 
-
-  "SMT C": {
-    "2023-02-20 12:00:00": {
-      "repair": 30,
-      "attrition": 20,
-      "station": [{"label": "EOI 1", "quantity": 10}],
-      "reason": [{"label": "Component Chift", "quantity": 8}, {"label": "Component Missing", "quantity": 10}]
-    },
-    "2023-02-20 13:00:00": {
-      "repair": 20,
-      "attrition": 2,
-      "station": [{}],
-      "reason": [{}]
-    },
-    "2023-02-20 14:00:00": {
-      "repair": 0,
-      "attrition": 2,
-      "station": [{}],
-      "reason": [{}]
+  {
+    "description": "SMT C",
+    "result":  {
+      "2023-02-20 12:00:00": {
+        "repair": 30,
+        "attrition": 20,
+        "station": [{"label": "EOI 1", "quantity": 10}],
+        "reason": [{"label": "Component Chift", "quantity": 2}, {"label": "Component Missing", "quantity": 10}],
+        "repair_history": [{"location": "CS3", "quantity": 10}, {"location": "CG9", "quantity": 30}]
+      },
+      "2023-02-20 13:00:00": {
+        "repair": 20,
+        "attrition": 2,
+        "station": [{}],
+        "reason": [{}],
+        "repair_history": [{}]
+      },
+      "2023-02-20 14:00:00": {
+        "repair": 0,
+        "attrition": 2,
+        "station": [{}],
+        "reason": [{}],
+        "repair_history": [{}]
+      }
     }
   }
-}
+]

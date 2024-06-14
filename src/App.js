@@ -6,7 +6,9 @@ const App = () => {
   const [chartData, setChartData] = useState([]);
   const [reasonData, setReasonData] = useState([]);
   const [stationData, setStationData] = useState([]);
-  const [filters, setFilters] = useState({ reason: null, station: null, hour: null, smt: null });
+  const [repairHistoryData, setRepairHistoryData] = useState([]);
+  const [filterState, setFilterState] = useState({ reason: null, station: null, hour: null, smt: null }); 
+  const [filters, setFilters] = useState(filterState); 
 
   const [smtTotals, setSmtTotals] = useState({
     SMT_A: { repair: 0, attrition: 0 },
@@ -17,19 +19,19 @@ const App = () => {
   const [overallTotals, setOverallTotals] = useState({ repair: 0, attrition: 0 });
 
   useEffect(() => {
-    // Processamento dos dados de 'repair' e 'attrition' por hora
-    const processedData = Object.keys(data).reduce((acc, smt) => {
-      Object.keys(data[smt]).forEach((time) => {
-        const hour = time.slice(11, 16); // Extraindo hora do timestamp
-        const repair = data[smt][time].repair;
-        const attrition = data[smt][time].attrition;
-        const reasons = data[smt][time].reason;
-        const stations = data[smt][time].station;
+    const processedData = data.reduce((acc, smt) => {
+      const smtKey = smt.description;
+      Object.entries(smt.result).forEach(([time, values]) => {
+        const hour = time.slice(11, 16);
+        const repair = values.repair;
+        const attrition = values.attrition;
+        const reasons = values.reason;
+        const stations = values.station;
 
         const matchesFilter = (filters.reason === null || reasons.some(r => r.label === filters.reason)) &&
                               (filters.station === null || stations.some(s => s.label === filters.station)) &&
                               (filters.hour === null || filters.hour === hour) &&
-                              (filters.smt === null || filters.smt === smt);
+                              (filters.smt === null || filters.smt === smtKey);
 
         if (matchesFilter) {
           if (!acc[hour]) {
@@ -46,15 +48,15 @@ const App = () => {
 
     setChartData(Object.values(processedData));
 
-    // Processamento dos dados de 'reason' para o gráfico horizontal
-    const reasonCounts = Object.keys(data).reduce((acc, smt) => {
-      Object.keys(data[smt]).forEach((time) => {
-        const hour = time.slice(11, 16); // Extraindo hora do timestamp
-        const reasons = data[smt][time].reason;
+    const reasonCounts = data.reduce((acc, smt) => {
+      const smtKey = smt.description;
+      Object.entries(smt.result).forEach(([time, values]) => {
+        const hour = time.slice(11, 16);
+        const reasons = values.reason;
 
         const matchesFilter = (filters.hour === null || filters.hour === hour) &&
-                              (filters.station === null || data[smt][time].station.some(s => s.label === filters.station)) &&
-                              (filters.smt === null || filters.smt === smt);
+                              (filters.station === null || values.station.some(s => s.label === filters.station)) &&
+                              (filters.smt === null || filters.smt === smtKey);
 
         if (matchesFilter) {
           reasons.forEach((reason) => {
@@ -78,15 +80,15 @@ const App = () => {
 
     setReasonData(reasonArray);
 
-    // Processamento dos dados de 'station' para o gráfico vertical
-    const stationCounts = Object.keys(data).reduce((acc, smt) => {
-      Object.keys(data[smt]).forEach((time) => {
-        const hour = time.slice(11, 16); // Extraindo hora do timestamp
-        const stations = data[smt][time].station;
+    const stationCounts = data.reduce((acc, smt) => {
+      const smtKey = smt.description;
+      Object.entries(smt.result).forEach(([time, values]) => {
+        const hour = time.slice(11, 16);
+        const stations = values.station;
 
         const matchesFilter = (filters.hour === null || filters.hour === hour) &&
-                              (filters.reason === null || data[smt][time].reason.some(r => r.label === filters.reason)) &&
-                              (filters.smt === null || filters.smt === smt);
+                              (filters.reason === null || values.reason.some(r => r.label === filters.reason)) &&
+                              (filters.smt === null || filters.smt === smtKey);
 
         if (matchesFilter) {
           stations.forEach((station) => {
@@ -110,7 +112,42 @@ const App = () => {
 
     setStationData(stationArray);
 
-    // Calcula total de Repair e Attrition
+    const repairHistoryCounts = data.reduce((acc, smt) => {
+      const smtKey = smt.description;
+      Object.entries(smt.result).forEach(([time, values]) => {
+        const hour = time.slice(11, 16);
+        const repairHistories = values.repair_history;
+
+        const matchesFilter = (filters.hour === null || filters.hour === hour) &&
+                              (filters.station === null || values.station.some(s => s.label === filters.station)) &&
+                              (filters.reason === null || values.reason.some(r => r.label === filters.reason)) &&
+                              (filters.smt === null || filters.smt === smtKey);
+
+        if (matchesFilter) {
+          repairHistories.forEach((repairHistory) => {
+            if (repairHistory.location) {
+              if (!acc[repairHistory.location]) {
+                acc[repairHistory.location] = {};
+              }
+              if (!acc[repairHistory.location][hour]) {
+                acc[repairHistory.location][hour] = 0;
+              }
+              acc[repairHistory.location][hour] += repairHistory.quantity;
+            }
+          });
+        }
+      });
+
+      return acc;
+    }, {});
+
+    const repairHistoryArray = Object.entries(repairHistoryCounts).map(([location, hours]) => ({
+      location,
+      hours: Object.entries(hours).map(([hour, quantity]) => ({ hour, quantity }))
+    }));
+
+    setRepairHistoryData(repairHistoryArray);
+
     let totalRep = 0;
     let totalAtt = 0;
     let smtARep = 0;
@@ -120,18 +157,18 @@ const App = () => {
     let smtCRep = 0;
     let smtCAtt = 0;
 
-    Object.keys(data).forEach((smt) => {
-      Object.values(data[smt]).forEach((timeData) => {
+    data.forEach((smt) => {
+      Object.values(smt.result).forEach((timeData) => {
         totalRep += timeData.repair;
         totalAtt += timeData.attrition;
 
-        if (smt === 'SMT A') {
+        if (smt.description === 'SMT A') {
           smtARep += timeData.repair;
           smtAAtt += timeData.attrition;
-        } else if (smt === 'SMT B') {
+        } else if (smt.description === 'SMT B') {
           smtBRep += timeData.repair;
           smtBAtt += timeData.attrition;
-        } else if (smt === 'SMT C') {
+        } else if (smt.description === 'SMT C') {
           smtCRep += timeData.repair;
           smtCAtt += timeData.attrition;
         }
@@ -147,55 +184,60 @@ const App = () => {
   }, [filters]);
 
   const handleReasonClick = (data) => {
-    setFilters((prevFilters) => ({
+    setFilterState((prevFilters) => ({
       ...prevFilters,
       reason: prevFilters.reason === data.label ? null : data.label,
     }));
+    setFilters(filterState);
   };
 
   const handleStationClick = (data) => {
-    setFilters((prevFilters) => ({
+    setFilterState((prevFilters) => ({
       ...prevFilters,
       station: prevFilters.station === data.label ? null : data.label,
     }));
+    setFilters(filterState);
   };
 
   const handleHourClick = (data) => {
-    setFilters((prevFilters) => ({
+    setFilterState((prevFilters) => ({
       ...prevFilters,
       hour: prevFilters.hour === data.hour ? null : data.hour,
     }));
+    setFilters(filterState);
   };
 
   const handleSmtClick = (smt) => {
-    setFilters((prevFilters) => ({
+    setFilterState((prevFilters) => ({
       ...prevFilters,
       smt: prevFilters.smt === smt ? null : smt,
     }));
+    setFilters(filterState);
+  };
+
+  const handleTotalClick = () => {
+    setFilterState({ reason: null, station: null, hour: null, smt: null });
+    setFilters(filterState);
   };
 
   return (
     <div>
       <div className="card-container" style={{ display: "flex", flexDirection: "row"}}>
-        {/* Card: Total Repair & Attrition */}
-        <div className="card" onClick={() => handleSmtClick(null)} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer",}}>
+        <div className="card" onClick={handleTotalClick} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer",}}>
           <h3>Total</h3>
           <p>Repair: {overallTotals.repair}</p>
           <p>Attrition: {overallTotals.attrition}</p>
         </div>
-        {/* Card: SMT A Repair & Attrition */}
         <div className="card" onClick={() => handleSmtClick('SMT A')} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer"}}>
           <h3>SMT A</h3>
           <p>Repair: {smtTotals.SMT_A.repair}</p>
           <p>Attrition: {smtTotals.SMT_A.attrition}</p>
         </div>
-        {/* Card: SMT B Repair & Attrition */}
         <div className="card" onClick={() => handleSmtClick('SMT B')} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer"}}>
           <h3>SMT B</h3>
           <p>Repair: {smtTotals.SMT_B.repair}</p>
           <p>Attrition: {smtTotals.SMT_B.attrition}</p>
         </div>
-        {/* Card: SMT C Repair & Attrition */}
         <div className="card" onClick={() => handleSmtClick('SMT C')} style={{ border: "1px solid red", padding: "10px", margin: "10px", cursor: "pointer"}}>
           <h3>SMT C</h3>
           <p>Repair: {smtTotals.SMT_C.repair}</p>
@@ -225,7 +267,7 @@ const App = () => {
         height={400}
         data={reasonData}
         layout="vertical"
-        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        margin={{ top: 20, right: 30, left: 40, bottom: 5 }}
         onClick={(event) => handleReasonClick(event.activePayload[0].payload)}
       >
         <XAxis type="number" />
@@ -255,6 +297,22 @@ const App = () => {
           <LabelList dataKey="quantity" position="top" />
         </Bar>
       </BarChart>
+
+      <h2>Repair History by Location and Hour</h2>
+      <ul>
+        {repairHistoryData.map((locationData) => (
+          <li key={locationData.location}>
+            <strong>{locationData.location}:</strong>
+            <ul>
+              {locationData.hours.map((hourData) => (
+                <li key={hourData.hour}>
+                  {hourData.hour}: {hourData.quantity}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
